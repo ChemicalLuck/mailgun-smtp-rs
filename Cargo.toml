@@ -17,3 +17,7 @@ serde = { version = "1.0.193", features = ["derive"] }
 lto = true
 opt-level = "z"
 strip = true
+
+[[bin]]
+name = "mailgun"
+path = "src/main.rs"
