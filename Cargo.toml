@@ -1,10 +1,10 @@
 [package]
-name = "mailgun-smtp-rs"
+name = "mailmeld"
 version = "1.0.0"
 authors = ["ChemicalLuck"]
 edition = "2021"
 description = "A simple mail-merging tool"
-repository = "https://github.com/ChemicalLuck/mailgun-smtp-rs"
+repository = "https://github.com/ChemicalLuck/mailmeld"
 license-file = "LICENSE"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -23,5 +23,5 @@ opt-level = "z"
 strip = true
 
 [[bin]]
-name = "mailgun"
+name = "mailmeld"
 path = "src/main.rs"
