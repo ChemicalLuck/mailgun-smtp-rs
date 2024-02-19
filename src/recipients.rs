@@ -1,6 +1,5 @@
-use std::{collections::HashMap, fs::File, path::Path};
+use std::{collections::HashMap, io::BufRead};
 
-use csv::Reader;
 use lettre::message::Mailbox;
 use serde::Deserialize;
 
@@ -24,16 +23,13 @@ impl From<Vec<Recipient>> for Recipients {
 }
 
 impl Recipients {
-    pub fn from_path(path: &Path) -> Result<Self, Box<dyn std::error::Error>> {
-        let csv = csv::Reader::from_path(path)?;
-        Self::from_reader(csv)
-    }
-    pub fn from_reader(mut reader: Reader<File>) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn from_reader(reader: Box<dyn BufRead>) -> Result<Self, Box<dyn std::error::Error>> {
+        let mut csv = csv::Reader::from_reader(reader);
         let mut recipients = Vec::new();
-        let headers = reader.headers()?.clone();
+        let headers = csv.headers()?.clone();
         let mut errs = Vec::new();
 
-        for result in reader.records() {
+        for result in csv.records() {
             let row = result?;
             let recipient: Result<Recipient, csv::Error> = row.deserialize(Some(&headers));
             match recipient {

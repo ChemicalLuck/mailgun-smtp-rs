@@ -1,3 +1,7 @@
 /target
 /test
 .env
+.env.*
+*.csv
+*.sh
+/working

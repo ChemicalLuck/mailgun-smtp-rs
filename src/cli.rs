@@ -8,9 +8,10 @@ use lettre::message::Mailbox;
 pub struct Cli {
     #[command(subcommand)]
     pub command: Command,
-    pub recipients: PathBuf,
     pub subject: String,
     pub message: PathBuf,
+    #[arg(long)]
+    pub recipients: Option<PathBuf>,
 }
 
 #[derive(Subcommand)]

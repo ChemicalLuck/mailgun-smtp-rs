@@ -2,7 +2,10 @@ mod cli;
 mod recipients;
 mod replace;
 
-use std::fs;
+use std::{
+    fs,
+    io::{BufRead, BufReader},
+};
 
 use clap::Parser;
 use lettre::{
@@ -32,7 +35,8 @@ fn send(settings: Settings, recipients: Recipients, subject: String, content: St
 
     let recipient_count = recipients.len() as u64;
     let progress_bar = indicatif::ProgressBar::new(recipient_count);
-    let mut writer = csv::Writer::from_writer(std::io::stdout());
+    // write to file
+    let mut writer = csv::Writer::from_path("output.csv").unwrap();
     let mut sent = 0;
 
     for mut recipient in recipients {
@@ -137,7 +141,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let content = fs::read_to_string(&cli.message)?;
 
-    let recipients = Recipients::from_path(&cli.recipients)?;
+    let reader: Box<dyn BufRead> = match &cli.recipients {
+        Some(path) => Box::new(BufReader::new(fs::File::open(path).unwrap())),
+        None => Box::new(BufReader::new(std::io::stdin())),
+    };
+
+    let recipients = Recipients::from_reader(reader)?;
 
     match cli.command {
         cli::Command::Send {
