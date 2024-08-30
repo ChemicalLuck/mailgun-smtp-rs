@@ -84,12 +84,41 @@ pub fn replace_variables(
     let mut err_keys = Vec::new();
     let mut result = String::new();
 
+    // lexer
+    //     .into_iter()
+    //     .map(|(token, is_variable)| {
+    //         if is_variable {
+    //             let (key, default) = match token.split_once('|') {
+    //                 Some((key, default)) => (key, default),
+    //                 None => (token.as_str(), ""),
+    //             };
+    //
+    //             if let Some(value) = variables.get(key) {
+    //                 value.to_owned()
+    //             } else {
+    //                 default.to_string()
+    //             }
+    //         } else {
+    //             token
+    //         }
+    //     })
+    //     .collect::<String>()
+
     for (token, is_variable) in lexer {
         if is_variable {
-            if let Some(value) = variables.get(&token) {
-                result.push_str(value);
+            let (key, default) = match token.split_once('|') {
+                Some((key, default)) => (key, default),
+                None => (token.as_str(), ""),
+            };
+
+            if let Some(value) = variables.get(key) {
+                if !value.is_empty() {
+                    result.push_str(value);
+                } else {
+                    result.push_str(default);
+                }
             } else {
-                err_keys.push(token.clone());
+                err_keys.push(key.to_string());
             }
         } else {
             result.push_str(&token);
@@ -141,5 +170,19 @@ mod tests {
         let input_nested = "Nested: {{name}} - {age}";
         let result_nested = replace_variables(input_nested, &variables);
         assert_eq!(result_nested, Ok("Nested: John - 25".to_string()));
+    }
+
+    #[test]
+    fn test_replace_variables_default() {
+        let mut variables = HashMap::new();
+        variables.insert("name".to_string(), "John".to_string());
+        variables.insert("age".to_string(), "".to_string());
+
+        let input_default = "Hello, {name}! You are {age|30} years old.";
+        let result_default = replace_variables(input_default, &variables);
+        assert_eq!(
+            result_default,
+            Ok("Hello, John! You are 30 years old.".to_string())
+        );
     }
 }

@@ -7,17 +7,18 @@ use std::{
     io::{BufRead, BufReader},
 };
 
+use chrono::Local;
 use clap::Parser;
+use cli::Cli;
 use lettre::{
     message::{header::ContentType, Mailbox},
     transport::smtp::authentication::Credentials,
     Message, SmtpTransport, Transport,
 };
+use serde::Serialize;
 
-use cli::Cli;
 use recipients::Recipients;
 use replace::replace_variables;
-use serde::Serialize;
 
 #[derive(Serialize)]
 struct Output {
@@ -36,7 +37,10 @@ fn send(settings: Settings, recipients: Recipients, subject: String, content: St
     let recipient_count = recipients.len() as u64;
     let progress_bar = indicatif::ProgressBar::new(recipient_count);
     // write to file
-    let mut writer = csv::Writer::from_path("output.csv").unwrap();
+    let now = Local::now();
+    let datetime = now.format("%Y%m%dT%H%M%S").to_string();
+    let output = format!("output-{}.csv", datetime);
+    let mut writer = csv::Writer::from_path(output).unwrap();
     let mut sent = 0;
 
     for mut recipient in recipients {
