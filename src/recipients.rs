@@ -25,29 +25,33 @@ impl From<Vec<Recipient>> for Recipients {
 impl Recipients {
     pub fn from_reader(reader: Box<dyn BufRead>) -> Result<Self, Box<dyn std::error::Error>> {
         let mut csv = csv::Reader::from_reader(reader);
-        let mut recipients = Vec::new();
         let headers = csv.headers()?.clone();
-        let mut errs = Vec::new();
+        let mut recipients = Vec::new();
+        let mut errors = Vec::new();
 
-        for result in csv.records() {
-            let row = result?;
-            let recipient: Result<Recipient, csv::Error> = row.deserialize(Some(&headers));
-            match recipient {
-                Ok(recipient) => recipients.push(recipient),
-                Err(err) => match err.kind() {
-                    csv::ErrorKind::Deserialize { pos, err } => {
-                        errs.push((pos.clone(), err.clone()));
-                        eprintln!("Error on line {}: {}", pos.clone().unwrap().line(), err)
+        for (i, result) in csv.records().enumerate() {
+            match result {
+                Ok(record) => match record.deserialize(Some(&headers)) {
+                    Ok(recipient) => recipients.push(recipient),
+                    Err(err) => {
+                        errors.push(format!("Error on record {}: {}", i + 1, err.to_string()));
                     }
-                    _ => todo!(),
                 },
+                Err(err) => {
+                    errors.push(format!(
+                        "CSV reading error on record {}: {}",
+                        i + 1,
+                        err.to_string()
+                    ));
+                }
             }
         }
 
-        if !errs.is_empty() {
+        if !errors.is_empty() {
+            eprintln!("{}", errors.join("\n"));
             return Err(std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
-                format!("{} errors", errs.len()),
+                format!("{} errors", errors.len()),
             )
             .into());
         }
