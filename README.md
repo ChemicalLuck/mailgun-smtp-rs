@@ -46,10 +46,8 @@ mailmeld [OPTIONS] <SUBJECT> <MESSAGE> <COMMAND>
 
 ## Personalisation
 
-Additional information from the recipients option can be used to personalise emails.
-Place a column header in curly braces with an optional default, i.e. `Hello {name|there}!`.
-If the column header is not found in the recipients file, the default will be used.
-You can use as many braces as you want, i.e. `Hello {{{name|there}}},\nWe have an important update for you. Your email is {{email}}.` is valid.
+Both Subject and Message can be customised using [Tera](https://keats.github.io/tera/docs/#introductio).
+fields can be added to the csv file and referenced in the subject and message using the field name in curly braces.
 
 ## Examples
 
@@ -58,7 +56,7 @@ You can use as many braces as you want, i.e. `Hello {{{name|there}}},\nWe have a
 To send emails with a subject and message:
 
 ```bash
-mailmeld "Important Update" "Hello {name},\nWe have an important update for you." send --recipients recipients.txt
+mailmeld "Important Update" "Hello {{name}},\nWe have an important update for you." send --recipients recipients.txt
 ```
 
 ### Preview Emails
@@ -66,7 +64,7 @@ mailmeld "Important Update" "Hello {name},\nWe have an important update for you.
 To preview the emails before sending them:
 
 ```bash
-mailmeld "Important Update" "Hello {name},\nWe have an important update for you." preview --recipients recipients.txt
+mailmeld "Important Update" "Hello {{name}},\nWe have an important update for you." preview --recipients recipients.txt
 ```
 
 ## Contributing
